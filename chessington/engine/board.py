@@ -25,6 +25,9 @@ class Square(namedtuple('Square', 'row col')):
 
     @staticmethod
     def at(row, col):
+        """
+        Creates a square at the given row and column.
+        """
         return Square(row=row, col=col)
 
 
@@ -55,12 +58,21 @@ class Board:
         return board
 
     def set_piece(self, square, piece):
+        """
+        Places the piece at the given position on the board.
+        """
         self.board[square.row][square.col] = piece
 
     def get_piece(self, square):
+        """
+        Retrieves the piece from the given square of the board.
+        """
         return self.board[square.row][square.col]
 
     def find_piece(self, piece_to_find):
+        """
+        Searches for the given piece on the board and returns its square.
+        """
         for row in range(BOARD_SIZE):
             for col in range(BOARD_SIZE):
                 if self.board[row][col] is piece_to_find:
@@ -68,6 +80,9 @@ class Board:
         raise Exception('The supplied piece is not on the board')
 
     def move_piece(self, from_square, to_square):
+        """
+        Moves the piece from the given starting square to the given destination square.
+        """
         moving_piece = self.get_piece(from_square)
         if moving_piece is not None and moving_piece.player == self.current_player:
             self.set_piece(to_square, moving_piece)

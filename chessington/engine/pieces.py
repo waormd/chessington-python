@@ -14,11 +14,10 @@ class Piece(ABC):
 
     @abstractmethod
     def get_available_moves(self, board):
+        """
+        Get all squares that the piece is allowed to move to.
+        """
         pass
-
-    def move_to(self, board, new_square):
-        current_square = board.find_piece(self)
-        board.move_piece(current_square, new_square)
 
 
 class Pawn(Piece):
