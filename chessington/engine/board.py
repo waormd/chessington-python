@@ -6,39 +6,31 @@ this is just a "dumb" board that will let you move pieces around as you like.
 from collections import namedtuple
 from enum import Enum, auto
 
+from chessington.engine.data import Player, Square
 from chessington.engine.pieces import Pawn, Knight, Bishop, Rook, Queen, King
 
 BOARD_SIZE = 8
-
-class Player(Enum):
-    """
-    The two players in a game of chess.
-    """
-    WHITE = auto()
-    BLACK = auto()
-
-
-class Square(namedtuple('Square', 'row col')):
-    """
-    An immutable pair (row, col) representing the coordinates of a square.
-    """
-
-    @staticmethod
-    def at(row, col):
-        """
-        Creates a square at the given row and column.
-        """
-        return Square(row=row, col=col)
-
 
 class Board:
     """
     A representation of the chess board, and the pieces on it.
     """
 
-    def __init__(self):
+    def __init__(self, player, board_state):
         self.current_player = Player.WHITE
-        self.board = Board._create_starting_board()
+        self.board = board_state
+
+    @staticmethod
+    def empty():
+        return Board(Player.WHITE, Board._create_empty_board())
+
+    @staticmethod
+    def at_starting_position():
+        return Board(Player.WHITE, Board._create_starting_board())
+
+    @staticmethod
+    def _create_empty_board():
+        return [[None] * BOARD_SIZE for _ in range(BOARD_SIZE)]
 
     @staticmethod
     def _create_starting_board():
@@ -87,4 +79,4 @@ class Board:
         if moving_piece is not None and moving_piece.player == self.current_player:
             self.set_piece(to_square, moving_piece)
             self.set_piece(from_square, None)
-            self.current_player = Player.WHITE if self.current_player == Player.BLACK else Player.WHITE
+            self.current_player = self.current_player.opponent()

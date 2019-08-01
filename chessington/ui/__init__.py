@@ -6,7 +6,8 @@ import os
 
 import PySimpleGUI as psg
 
-from chessington.engine.board import Player, Board, Square, BOARD_SIZE
+from chessington.engine.board import Board, BOARD_SIZE
+from chessington.engine.data import Player, Square
 from chessington.engine.pieces import Pawn, Knight, Bishop, Rook, Queen, King
 
 IMAGES_BASE_DIRECTORY = 'images'
@@ -68,7 +69,7 @@ def highlight_squares(window, from_square, to_squares):
 def play_game():
     psg.ChangeLookAndFeel('GreenTan')
 
-    board = Board()
+    board = Board.at_starting_position()
     board_layout = render_board(board)
     window = psg.Window('Chessington', default_button_element_size=(12, 1), auto_size_buttons=False).Layout(board_layout)
 

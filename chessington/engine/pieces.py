@@ -4,6 +4,8 @@ Definitions of each of the different chess pieces.
 
 from abc import ABC, abstractmethod
 
+from chessington.engine.data import Player, Square
+
 class Piece(ABC):
     """
     An abstract base class from which all pieces inherit.

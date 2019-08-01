@@ -1,9 +1,10 @@
-from chessington.engine.board import Board, Square, Player
+from chessington.engine.board import Board
+from chessington.engine.data import Player, Square
 
 def test_new_board_has_white_pieces_at_bottom():
 
     # Arrange
-    board = Board()
+    board = Board.at_starting_position()
 
     # Act
     piece = board.get_piece(Square.at(0, 0))
@@ -14,7 +15,7 @@ def test_new_board_has_white_pieces_at_bottom():
 def test_new_board_has_black_pieces_at_top():
 
     # Arrange
-    board = Board()
+    board = Board.at_starting_position()
 
     # Act
     piece = board.get_piece(Square.at(7, 0))
@@ -25,7 +26,7 @@ def test_new_board_has_black_pieces_at_top():
 def test_pieces_can_be_moved_on_the_board():
 
     # Arrange
-    board = Board()
+    board = Board.at_starting_position()
     from_square = Square.at(1, 0)
     piece = board.get_piece(from_square)
 
