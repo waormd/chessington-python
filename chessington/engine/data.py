@@ -16,7 +16,7 @@ class Player(Enum):
         else: return Player.WHITE
 
 
-@dataclass
+@dataclass(frozen=True)
 class Square:
     row: int
     col: int
