@@ -1,8 +1,7 @@
 """
 Data classes for easy representation of concepts such as a square on the board or a player.
 """
-
-from collections import namedtuple
+from dataclasses import dataclass
 from enum import Enum, auto
 
 class Player(Enum):
@@ -17,14 +16,17 @@ class Player(Enum):
         else: return Player.WHITE
 
 
-class Square(namedtuple('Square', 'row col')):
-    """
-    An immutable pair (row, col) representing the coordinates of a square.
-    """
+@dataclass
+class Square:
+    row: int
+    col: int
 
-    @staticmethod
-    def at(row, col):
+    @classmethod
+    def at(cls, row: int, col: int):
         """
-        Creates a square at the given row and column.
+        Provides backward compatibility with previous namedtuple implementation.
+
+        Square.at(...) is equivalent to Square(...).
         """
-        return Square(row=row, col=col)
+
+        return cls(row=row, col=col)

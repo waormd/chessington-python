@@ -21,6 +21,17 @@ Running the tests
 To run the tests, use the command ``poetry run pytest tests``. This will run any test defined in a function
 matching the pattern ``test_*`` or ``*_test``, in any file matching the same patterns, in the ``tests`` directory.
 
+GUI Dependencies
+----------------
+
+The application runs a desktop GUI using Tkinter. If you're running an official Python distribution, this will just
+work out of the box.
+
+Users relying on third-party Python installations (e.g. Mac/Linux system installs, package managers) may need to configure
+Tcl/Tk separately, or download an official Python distribution for use on this codebase.
+
+Mac users can check out https://www.python.org/download/mac/tcltk/ for further details.
+
 Notes for WSL users
 -------------------
 

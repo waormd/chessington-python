@@ -3,9 +3,6 @@ A module providing a representation of a chess board. The rules of chess are not
 this is just a "dumb" board that will let you move pieces around as you like.
 """
 
-from collections import namedtuple
-from enum import Enum, auto
-
 from chessington.engine.data import Player, Square
 from chessington.engine.pieces import Pawn, Knight, Bishop, Rook, Queen, King
 

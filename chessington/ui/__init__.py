@@ -2,107 +2,108 @@
 A GUI chess board that can be interacted with, and pieces moved around on.
 """
 
-import os
-
-import PySimpleGUI as psg
+import tkinter as tk
+from typing import Iterable
 
 from chessington.engine.board import Board, BOARD_SIZE
-from chessington.engine.data import Player, Square
-from chessington.engine.pieces import Pawn, Knight, Bishop, Rook, Queen, King
+from chessington.engine.data import Square
+from chessington.ui.colours import Colour
+from chessington.ui.images import ImageRepository
 
-IMAGES_BASE_DIRECTORY = 'images'
+WINDOW_SIZE = 60
 
-BLACK_SQUARE_COLOUR = '#B58863'
-WHITE_SQUARE_COLOUR = '#F0D9B5'
-FROM_SQUARE_COLOUR = '#33A1FF'
-TO_SQUARE_COLOUR = '#B633FF'
+images = ImageRepository()
 
-def get_image_name_from_piece(piece):
-    if piece is None:
-        return os.path.join(IMAGES_BASE_DIRECTORY, 'blank.png')
-    class_to_piece_name = { Pawn: 'pawn', Knight: 'knight', Bishop: 'bishop', Rook: 'rook', Queen: 'queen', King: 'king' }
-    player_to_colour_suffix = { Player.WHITE: 'w', Player.BLACK: 'b' }
-    image_name = class_to_piece_name[piece.__class__] + player_to_colour_suffix[piece.player] + '.png'
-    return os.path.join(IMAGES_BASE_DIRECTORY, image_name)
 
-def get_key_from_square(square):
-    return (square.row, square.col)
+def get_square_colour(square: Square):
+    """Determine the background colour of a square (checkerboard pattern)"""
+    return Colour.BLACK_SQUARE if square.row % 2 == square.col % 2 else Colour.WHITE_SQUARE
 
-def get_square_colour(square):
-    return BLACK_SQUARE_COLOUR if square.row % 2 == square.col % 2 else WHITE_SQUARE_COLOUR
 
-def render_square(board, square):
+def update_square(window: tk.Tk, board: Board, square: Square, colour: Colour = None):
+    """Re-draw the Square, optionally setting a non-standard background colour"""
     piece = board.get_piece(square)
-    image_file = get_image_name_from_piece(piece)
-    square_colour = get_square_colour(square)
-    key = get_key_from_square(square)
-    return psg.Button('', image_filename=image_file, size=(1, 1), button_color=('white', square_colour), pad=(0, 0), key=key)
+    colour = colour or get_square_colour(square)
+    image = images.get_image(piece, colour)
 
-def render_board(board):
-    return [[render_square(board, Square.at(row, col)) for col in range(BOARD_SIZE)] for row in range(BOARD_SIZE - 1, -1, -1)]
+    frame = window.nametowidget(square_id(square))
+    btn = frame.nametowidget('button')
+    btn.configure(image=image)
+    btn.image = image
 
-def update_pieces(window, board):
+
+def update_pieces_and_colours(window: tk.Tk, board: Board):
+    """Refresh the GUI to reflect the board state"""
     for row in range(BOARD_SIZE):
         for col in range(BOARD_SIZE):
-            image_file = get_image_name_from_piece(board.get_piece(Square.at(row, col)))
-            element = window.FindElement(key=(row, col))
-            element.Update(image_filename=image_file)
+            update_square(window, board, Square(row, col))
 
-def set_square_colour(window, square, colour):
-    element = window.FindElement(key=(square.row, square.col))
-    element.Update(button_color=('white', colour))
 
-def reset_square_colours(window):
-    for row in range(BOARD_SIZE):
-        for col in range(BOARD_SIZE):
-            colour = get_square_colour(Square.at(row, col))
-            element = window.FindElement(key=(row, col))
-            element.Update(button_color=('white', colour))
-
-def highlight_squares(window, from_square, to_squares):
-    reset_square_colours(window)
+def highlight_squares(window: tk.Tk, board: Board, from_square: Square, to_squares: Iterable[Square]):
+    """Set background colours on active movement squares"""
     if from_square is not None:
-        set_square_colour(window, from_square, FROM_SQUARE_COLOUR)
+        update_square(window, board, from_square, Colour.FROM_SQUARE)
     for square in to_squares:
-        set_square_colour(window, square, TO_SQUARE_COLOUR)
+        update_square(window, board, square, Colour.TO_SQUARE)
+
+
+def square_id(square: Square):
+    """Generate a tkinter-suitable name for a square"""
+    return f'square@{square.row}{square.col}'
+
 
 def play_game():
-    psg.ChangeLookAndFeel('GreenTan')
-
+    """Launch Chessington!"""
+    window = tk.Tk()
+    window.title('Chessington')
+    window.resizable(False, False)
     board = Board.at_starting_position()
-    board_layout = render_board(board)
-    window = psg.Window('Chessington', default_button_element_size=(12, 1), auto_size_buttons=False).Layout(board_layout)
 
     from_square = None
     to_squares = []
 
-    def handle_click(row, col):
+    def generate_click_handler(clicked_square: Square):
+        def handle_click():
+            nonlocal window, board, from_square, to_squares
+            clicked_piece = board.get_piece(clicked_square)
 
-        nonlocal window, board, from_square, to_squares
-        clicked_piece = board.get_piece(Square.at(row, col))
+            # If making an allowed move, then make it
+            if from_square is not None and clicked_square in to_squares:
+                board.get_piece(from_square).move_to(board, clicked_square)
+                from_square, to_squares = None, []
 
-        # If making an allowed move, then make it
-        if from_square is not None and any(s.row == row and s.col == col for s in to_squares):
-            board.get_piece(from_square).move_to(board, Square.at(row, col))
-            from_square, to_squares = None, []
+            # If clicking on a piece whose turn it is, get its allowed moves
+            elif clicked_piece is not None and clicked_piece.player == board.current_player:
+                from_square = clicked_square
+                to_squares = clicked_piece.get_available_moves(board)
 
-        # If clicking on a piece whose turn it is, get its allowed moves
-        elif clicked_piece is not None and clicked_piece.player == board.current_player:
-            from_square = Square.at(row, col)
-            to_squares = clicked_piece.get_available_moves(board)
+            # Otherwise reset everthing to default
+            else:
+                from_square, to_squares = None, []
 
-        # Otherwise reset everthing to default
-        else:
-            from_square, to_squares = None, []
+            update_pieces_and_colours(window, board)
+            highlight_squares(window, board, from_square, to_squares)
 
-    while True:
+        return handle_click
 
-        # Check for a square being clicked on and react appropriately
-        button, _ = window.Read()
-        if button is not None:
-            handle_click(*button)
+    # Create the board
+    for row in range(BOARD_SIZE):
+        for col in range(BOARD_SIZE):
+            square = Square(row, col)
+            frame = tk.Frame(window, width=WINDOW_SIZE, height=WINDOW_SIZE, name=square_id(square))
+            frame.grid_propagate(False)         # disables resizing of frame
+            frame.columnconfigure(0, weight=1)  # enables button to fill frame
+            frame.rowconfigure(0, weight=1)     # any positive number is OK
 
-        # Update the UI
-        highlight_squares(window, from_square, to_squares)
-        update_pieces(window, board)
+            # The board has (0, 0) in the bottom left.
+            # TKinter Grid has (0, 0) in the top left.
+            # Map between these:
+            gui_row = BOARD_SIZE - square.row - 1
+            frame.grid(row=gui_row, column=square.col)
+
+            btn = tk.Button(frame, command=generate_click_handler(square), name='button')
+            btn.grid(sticky='wens')
+
+    update_pieces_and_colours(window, board)
+    window.mainloop()
 
