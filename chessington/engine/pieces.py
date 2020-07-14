@@ -110,4 +110,28 @@ class King(Piece):
     """
 
     def get_available_moves(self, board):
-        return []
+        base_moves = self.get_base_moves(board)
+        available_moves = []        
+        for square in base_moves:
+            if square.row <= -1 or square.row >= 8 or square.col <= -1 or square.col >= 8:
+                continue
+            potentialTarget = board.get_piece(square)
+            if (potentialTarget == None or (potentialTarget.player != self.player)):
+                available_moves.append(square)
+        
+        return available_moves
+
+       
+    def get_base_moves(self, board):
+        base_moves = []
+        square = board.find_piece(self)
+        base_moves.append(Square.at(square.row - 1, square.col - 1))
+        base_moves.append(Square.at(square.row - 1, square.col - 0))
+        base_moves.append(Square.at(square.row - 1, square.col + 1))
+        base_moves.append(Square.at(square.row - 0, square.col - 1))
+        base_moves.append(Square.at(square.row - 0, square.col + 1))
+        base_moves.append(Square.at(square.row + 1, square.col - 1))
+        base_moves.append(Square.at(square.row + 1, square.col - 0))
+        base_moves.append(Square.at(square.row + 1, square.col + 1))
+
+        return base_moves
