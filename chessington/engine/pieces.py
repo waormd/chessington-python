@@ -35,8 +35,38 @@ class Pawn(Piece):
     """
 
     def get_available_moves(self, board):
-        return []
+        if (self.player == Player.WHITE):
+            return self.move_by_side(board, 1, 1)
+        else:
+            return self.move_by_side(board, -1, 6)
 
+    def move_by_side(self, board, move, startRow):
+            available_moves = []
+            square = board.find_piece(self)
+            if (square.row != 0 and square.row != 7):
+                forward = Square.at(square.row + move, square.col)
+                if (board.get_piece(forward) == None):
+                    available_moves.append(forward)
+
+                    twoForward = Square.at(square.row + (move * 2), square.col)
+                    if(square.row == startRow and board.get_piece(twoForward) == None):
+                        available_moves.append(twoForward)
+
+                if square.col >= 1 and square.col <= 7:
+                    leftAttack = Square.at(square.row + move, square.col - 1)
+                    leftTarget = board.get_piece(leftAttack)
+                    if (leftTarget != None):
+                        if (leftTarget.player != self.player):
+                            available_moves.append(leftAttack)
+
+                if square.col >= 0 and square.col <= 6:
+                    rightAttack = Square.at(square.row + move, square.col + 1)
+                    rightTarget = board.get_piece(rightAttack)
+                    if (rightTarget != None):
+                        if (rightTarget.player != self.player):
+                            available_moves.append(rightAttack)
+                    
+            return available_moves
 
 class Knight(Piece):
     """
